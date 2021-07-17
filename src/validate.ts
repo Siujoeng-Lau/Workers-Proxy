@@ -26,7 +26,9 @@ const validateFirewallOptions = (
   }
 };
 
-const validateErrorOptions = (userConfig : ErrorOptions) : void => {
+const validateErrorOptions = (
+  userConfig : ErrorOptions,
+) : void => {
   if (userConfig.errorCode === undefined || userConfig.responsePath === undefined) {
     throw new Error('Invalid customized error configuration.');
   }
