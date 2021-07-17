@@ -41,9 +41,9 @@ export default function useProxy(
         error,
         500,
       );
+    } finally {
       return context.response;
     }
-    return context.response;
   };
 
   return {
