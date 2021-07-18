@@ -1,36 +1,60 @@
 import { ErrorOptions } from '../types/custom-error';
 import { FirewallOptions } from '../types/firewall';
 import { Middleware } from '../types/middleware';
+import { UpstreamOptions } from '../types/upstream';
+
+const validateUpstreamOptions = (
+  upstream: UpstreamOptions,
+): void => {
+  if (upstream.domain === undefined) {
+    throw new Error('Invalid \'upstream\' field in the option object.');
+  }
+};
 
 const validateFirewallOptions = (
-  userConfig: FirewallOptions,
-) : void => {
-  if (userConfig.field === undefined
-      || userConfig.operator === undefined
-      || userConfig.value === undefined) {
-    throw new Error('Invalid firewall configuration. Please check that you provided proper settings.');
+  firewall: FirewallOptions,
+): void => {
+  if (
+    firewall.field === undefined
+    || firewall.operator === undefined
+    || firewall.value === undefined
+  ) {
+    throw new Error('Invalid \'firewall\' field in the option object.');
   }
-  const fields = new Set(['country', 'continent', 'asn', 'ip', 'hostname', 'user-agent']);
-  const operators = new Set(['equal', 'not equal', 'greater', 'less', 'in', 'not in', 'contain', 'not contain', 'match']);
-  if (fields.has(userConfig.field) === false) {
-    throw new Error('Invalid firewall field configuration');
+
+  const fields = new Set([
+    'country',
+    'continent',
+    'asn',
+    'ip',
+    'hostname',
+    'user-agent',
+  ]);
+  if (fields.has(firewall.field) === false) {
+    throw new Error('Invalid \'firewall\' field in the option object.');
   }
-  if (operators.has(userConfig.operator) === false) {
-    throw new Error('Invalid firewall operator configuration');
-  }
-  if (Array.isArray(userConfig.value) === false) {
-    if (typeof userConfig.value !== 'string'
-          || typeof userConfig.value !== 'number') {
-      throw new Error('Invalid firewall value configuration');
-    }
+
+  const operators = new Set([
+    'equal',
+    'not equal',
+    'greater',
+    'less',
+    'in',
+    'not in',
+    'contain',
+    'not contain',
+    'match',
+  ]);
+  if (operators.has(firewall.operator) === false) {
+    throw new Error('Invalid \'firewall\' field in the option object.');
   }
 };
 
 const validateErrorOptions = (
-  userConfig : ErrorOptions,
-) : void => {
-  if (userConfig.errorCode === undefined || userConfig.responsePath === undefined) {
-    throw new Error('Invalid customized error configuration.');
+  error : ErrorOptions,
+): void => {
+  if (error.errorCode === undefined || error.responsePath === undefined) {
+    throw new Error('Invalid \'error\' field in the option object.');
   }
 };
 
@@ -46,17 +70,11 @@ export const useValidate: Middleware = (
   } = options;
 
   if (upstream === undefined) {
-    throw new Error("The required field 'upstream' in the configuration is missing.");
-  }
-
-  if (Array.isArray(upstream)) {
-    upstream.forEach((upstreamOptions) => {
-      if (upstreamOptions.domain === undefined) {
-        throw new Error("The required field 'domain' in the configuration is missing.");
-      }
-    });
-  } else if (upstream.domain === undefined) {
-    throw new Error("The required field 'domain' in the configuration is missing.");
+    throw new Error('The required \'upstream\' field in the option object is missing.');
+  } else if (Array.isArray(upstream)) {
+    upstream.forEach(validateUpstreamOptions);
+  } else {
+    validateUpstreamOptions(upstream);
   }
 
   if (firewall !== undefined) {
@@ -74,5 +92,6 @@ export const useValidate: Middleware = (
       validateErrorOptions(error);
     }
   }
+
   return next();
 };

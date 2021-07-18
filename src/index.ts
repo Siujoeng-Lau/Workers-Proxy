@@ -1,3 +1,4 @@
+import { useValidate } from './validate';
 import { useFirewall } from './firewall';
 import { useRequestHeaders, useResponseHeaders } from './headers';
 import { useSelectUpstream } from './load-balancing';
@@ -16,6 +17,7 @@ export default function useProxy(
   options: Configuration,
 ): Proxy {
   const pipeline = usePipeline(
+    useValidate,
     useFirewall,
     useRequestHeaders,
     useSelectUpstream,
