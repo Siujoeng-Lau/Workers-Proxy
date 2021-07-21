@@ -15,11 +15,12 @@ export const useSelectUpstream: Middleware = (
 ) => {
   const { options } = context;
   const upstreamOptions = options.upstream;
-  const userIP = ipToNum(context.request.headers.get('cf-connecting-ip'));
   const upstream = Array.isArray(upstreamOptions) ? upstreamOptions : [upstreamOptions];
-  context.upstream = userIP === -1
-    ? upstream[Math.floor(Math.random() * upstream.length)]
-    : upstream[userIP % upstream.length];
-
+  if (context.request.headers.get('cf-connecting-ip') === null) {
+    context.upstream = upstream[Math.floor(Math.random() * upstream.length)];
+  } else {
+    const userIP = ipToNum(context.request.headers.get('cf-connecting-ip'));
+    context.upstream = upstream[userIP % upstream.length];
+  }
   return next();
 };
