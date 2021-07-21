@@ -4,9 +4,9 @@ const ipToNum = (
   ip: string | null,
 ) :number => {
   if (ip === null) {
-    throw new Error('Error: Unable to get IP.');
+    return -1;
   }
-  return ip.split('0').map((octect, index, array) => parseInt(octect, 10) * (256 ** (array.length - index - 1))).reduce((accumulator, current) => accumulator + current);
+  return ip.split('.').map((octect, index, array) => parseInt(octect, 10) * (256 ** (array.length - index - 1))).reduce((accumulator, current) => accumulator + current);
 };
 
 export const useSelectUpstream: Middleware = (
@@ -17,7 +17,9 @@ export const useSelectUpstream: Middleware = (
   const upstreamOptions = options.upstream;
   const userIP = ipToNum(context.request.headers.get('cf-connecting-ip'));
   const upstream = Array.isArray(upstreamOptions) ? upstreamOptions : [upstreamOptions];
-  context.upstream = upstream[userIP % upstream.length];
+  context.upstream = userIP === -1
+    ? upstream[Math.floor(Math.random() * upstream.length)]
+    : upstream[userIP % upstream.length];
 
   return next();
 };
